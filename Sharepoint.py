@@ -59,7 +59,7 @@ def request_additional_password(AnchisaP):
         print("การร้องขอรหัสผ่านเพิ่มเติมไม่สำเร็จ")
 
 # ขั้นตอนที่ 2: ใช้รหัสผ่านเพิ่มเติมในการยืนยันตัวตนใน Microsoft Authenticator
-def verify_with_additional_password(Anchisa P, additional_password):
+def verify_with_additional_password(username, additional_password):
     endpoint = "https://login.microsoftonline.com/common/password/verify"
     headers = {
         "Content-Type": "application/json"
