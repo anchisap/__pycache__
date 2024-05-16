@@ -38,29 +38,30 @@ class SharePoint:
         return list_data
 
 
-import os
-from office365.runtime.auth.authentication_context import AuthenticationContext
-from office365.sharepoint.client_context import ClientContext
-from office365.sharepoint.files.file import File
- 
-# Replace with your SharePoint site URL, list title, and credentials
-site_url = "https://ssigroups.sharepoint.com/sites/SSI-ITScouting-KnowledgeSharing/"
-list_title = "CL1_S1007_Absence_Request"
-username = "git"
-password = "Password123"
- 
-ctx_auth = AuthenticationContext(site_url)
-if ctx_auth.acquire_token_for_user(username, password):
-    ctx = ClientContext(site_url, ctx_auth)
-    web = ctx.web
-    sp_list = web.lists.get_by_title(list_title)
- 
-    # Get list items (replace with desired query or actions)
-    items = sp_list.get_items().top(10)  # Fetch top 10 items
-    ctx.load(items)
-    ctx.execute_query()
- 
-    for item in items:
-        print(item.properties["Title"])  # Access list item properties
-else:
-    print("Authentication failed: ", ctx_auth.get_last_error())
+
+import requests
+import json
+
+from msal import PublicClientApplication
+
+def get_token(client_id, tenant_id, username, password):
+    authority = f"https://login.microsoftonline.com/{tenant_id}"
+    app = PublicClientApplication(client_id, authority=authority)
+    result = app.acquire_token_by_username_password(username, password, scopes=["https://graph.microsoft.com/.default"])
+    
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        raise Exception(result.get("error_description"))
+
+# ข้อมูลการตั้งค่า
+client_id = "b39fa7365b0d4f0095bd25b49271daa7"  # ใส่ Client ID ที่ได้จากการลงทะเบียนแอปพลิเคชัน
+tenant_id = "539e183a-2de4-4fef-8217-904f310d2199"  # Tenant ID
+username = "git@ssi-steel.com"  # รับชื่อผู้ใช้งานผ่าน Input
+password = "Password123"  # รับรหัสผ่านผ่าน Input
+
+try:
+    token = get_token(client_id, tenant_id, username, password)
+    print("การยืนยันตัวตนสำเร็จ:", token)
+except Exception as e:
+    print("การยืนยันตัวตนไม่สำเร็จ:", str(e))
