@@ -1,42 +1,26 @@
-import requests
-import json
-
-# ขั้นตอนที่ 1: ร้องขอรหัสผ่านเพิ่มเติมผ่านทางอีเมลหรือ SMS
-def request_additional_password(username):
-    endpoint = "https://login.microsoftonline.com/common/password/add"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "username": username
-    }
-    response = requests.post(endpoint, headers=headers, data=json.dumps(data))
-    
-    if response.status_code == 200:
-        print("ร้องขอรหัสผ่านเพิ่มเติมสำเร็จ")
-    else:
-        print("การร้องขอรหัสผ่านเพิ่มเติมไม่สำเร็จ")
-
-# ขั้นตอนที่ 2: ใช้รหัสผ่านเพิ่มเติมในการยืนยันตัวตนใน Microsoft Authenticator
-def verify_with_additional_password(username, additional_password):
-    endpoint = "https://login.microsoftonline.com/common/password/verify"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "username": username,
-        "additional_password": additional_password
-    }
-    response = requests.post(endpoint, headers=headers, data=json.dumps(data))
-    
-    if response.status_code == 200:
-        print("การยืนยันตัวตนผ่าน Microsoft Authenticator เสร็จสิ้น")
-    else:
-        print("การยืนยันตัวตนผ่าน Microsoft Authenticator ไม่สำเร็จ")
-
-# การใช้งาน
-username = "your_username"
-request_additional_password(username)
-
-additional_password = input("กรุณาใส่รหัสผ่านเพิ่มเติมที่คุณได้รับ: ")
-verify_with_additional_password(username, additional_password)
+import os
+from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.files.file import File
+ 
+# Replace with your SharePoint site URL, list title, and credentials
+site_url = "https://ssigroups.sharepoint.com/sites/SSI-ITScouting-KnowledgeSharing/"
+list_title = "CL1_S1007_Absence_Request"
+username = "git@ssi-steel.com"
+password = "Password123"
+ 
+ctx_auth = AuthenticationContext(site_url)
+if ctx_auth.acquire_token_for_user(username, password):
+    ctx = ClientContext(site_url, ctx_auth)
+    web = ctx.web
+    sp_list = web.lists.get_by_title(list_title)
+ 
+    # Get list items (replace with desired query or actions)
+    items = sp_list.get_items().top(10)  # Fetch top 10 items
+    ctx.load(items)
+    ctx.execute_query()
+ 
+    for item in items:
+        print(item.properties["Title"])  # Access list item properties
+else:
+    print("Authentication failed: ", ctx_auth.get_last_error())
